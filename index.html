@@ -2,73 +2,107 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Metas 2026 💕</title>
+<title>Metas 2026</title>
 
 <style>
 body{
   font-family: Arial;
-  background:#fce4ec;
+  background:#f4f4f4;
+  margin:0;
+}
+
+h1{
   text-align:center;
+  margin-top:20px;
 }
 
 .container{
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  margin-top:40px;
+}
+
+.left{
   background:white;
   padding:20px;
+  width:300px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.right{
   width:400px;
-  margin:auto;
-  margin-top:40px;
-  border-radius:15px;
 }
 
 input, select{
-  padding:6px;
-  margin:5px;
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
 }
 
 button{
-  background:#e91e63;
-  color:white;
-  border:none;
   padding:6px 10px;
+  border:none;
   cursor:pointer;
   border-radius:5px;
+  margin-top:5px;
+}
+
+.addBtn{
+  background:#333;
+  color:white;
+  width:100%;
 }
 
 .meta{
-  background:#f8bbd0;
-  margin:8px;
-  padding:8px;
+  background:white;
+  padding:10px;
+  margin-bottom:10px;
   border-radius:8px;
+  box-shadow:0 0 5px rgba(0,0,0,0.1);
 }
 
 .concluida{
-  text-decoration: line-through;
-  background:#c8e6c9;
+  background:#d4edda;
+  text-decoration:line-through;
+}
+
+.section-title{
+  margin-top:20px;
+  font-weight:bold;
 }
 
 .progress-bar{
   background:#ddd;
+  height:20px;
   border-radius:10px;
   overflow:hidden;
-  margin:10px 0;
+  margin-top:10px;
 }
 
 .progress{
-  background:#e91e63;
-  height:20px;
+  background:#333;
+  height:100%;
   width:0%;
   color:white;
+  text-align:center;
 }
 </style>
 </head>
 <body>
 
+<h1>Metas 2026</h1>
+
 <div class="container">
-<h2>Metas 2026 💖</h2>
+
+<div class="left">
+<h3>Adicionar Meta</h3>
 
 <input id="metaInput" placeholder="Digite uma meta">
 
 <select id="mes">
+<option>Decorrer do ano</option>
 <option>Janeiro</option>
 <option>Fevereiro</option>
 <option>Março</option>
@@ -83,13 +117,23 @@ button{
 <option>Dezembro</option>
 </select>
 
-<button onclick="addMeta()">Adicionar</button>
+<button class="addBtn" onclick="addMeta()">Adicionar</button>
 
 <div class="progress-bar">
 <div id="progress" class="progress">0%</div>
 </div>
 
-<div id="metas"></div>
+</div>
+
+<div class="right">
+
+<div class="section-title">Metas Pendentes</div>
+<div id="pendentes"></div>
+
+<div class="section-title">Metas Concluídas</div>
+<div id="concluidas"></div>
+
+</div>
 
 </div>
 
@@ -106,7 +150,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const metasDiv = document.getElementById("metas");
+const pendentesDiv = document.getElementById("pendentes");
+const concluidasDiv = document.getElementById("concluidas");
 const progressBar = document.getElementById("progress");
 
 function addMeta(){
@@ -134,21 +179,30 @@ function atualizarProgresso(docs){
 }
 
 onSnapshot(collection(db,"metas"),(snapshot)=>{
-  metasDiv.innerHTML="";
+  pendentesDiv.innerHTML="";
+  concluidasDiv.innerHTML="";
   let docs = [];
+
   snapshot.forEach((docItem)=>{
     docs.push(docItem);
-
     let data = docItem.data();
 
-    metasDiv.innerHTML += `
+    let metaHTML = `
     <div class="meta ${data.concluida ? "concluida" : ""}">
       <strong>${data.texto}</strong><br>
       <small>${data.mes}</small><br>
-      <button onclick="toggle('${docItem.id}',${data.concluida})">Concluir</button>
+      <button onclick="toggle('${docItem.id}',${data.concluida})">
+        ${data.concluida ? "Desfazer" : "Concluir"}
+      </button>
       <button onclick="excluir('${docItem.id}')">Excluir</button>
     </div>
     `;
+
+    if(data.concluida){
+      concluidasDiv.innerHTML += metaHTML;
+    } else {
+      pendentesDiv.innerHTML += metaHTML;
+    }
   });
 
   atualizarProgresso(docs);
