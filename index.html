@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Metas 2026</title>
 
 <style>
@@ -21,6 +22,7 @@ h1{
   justify-content:center;
   gap:40px;
   margin-top:40px;
+  flex-wrap:wrap;
 }
 
 .left{
@@ -88,6 +90,22 @@ button{
   color:white;
   text-align:center;
 }
+
+/* RESPONSIVIDADE CELULAR */
+@media (max-width: 768px){
+  .container{
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .left, .right{
+    width:90%;
+  }
+
+  h1{
+    font-size:22px;
+  }
+}
 </style>
 </head>
 <body>
@@ -141,6 +159,7 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// 🔥 COLOQUE SEUS DADOS REAIS AQUI
 const firebaseConfig = {
   apiKey: "AIzaSyCaHZ7sm6-sPp4zpnpOB8dwzDwbunsExC8",
   authDomain: "metas-ana-e-th.firebaseapp.com",
