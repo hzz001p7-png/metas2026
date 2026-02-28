@@ -3,35 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <title>Metas 2026 💕</title>
+
 <style>
 body{
   font-family: Arial;
   background:#fce4ec;
   text-align:center;
 }
+
 .container{
   background:white;
   padding:20px;
-  width:350px;
+  width:400px;
   margin:auto;
   margin-top:40px;
-  border-radius:10px;
+  border-radius:15px;
 }
+
+input, select{
+  padding:6px;
+  margin:5px;
+}
+
 button{
   background:#e91e63;
   color:white;
   border:none;
-  padding:8px;
+  padding:6px 10px;
   cursor:pointer;
+  border-radius:5px;
 }
-input{
-  padding:5px;
-}
+
 .meta{
   background:#f8bbd0;
-  margin:5px;
-  padding:5px;
-  border-radius:5px;
+  margin:8px;
+  padding:8px;
+  border-radius:8px;
+}
+
+.concluida{
+  text-decoration: line-through;
+  background:#c8e6c9;
+}
+
+.progress-bar{
+  background:#ddd;
+  border-radius:10px;
+  overflow:hidden;
+  margin:10px 0;
+}
+
+.progress{
+  background:#e91e63;
+  height:20px;
+  width:0%;
+  color:white;
 }
 </style>
 </head>
@@ -41,7 +67,27 @@ input{
 <h2>Metas 2026 💖</h2>
 
 <input id="metaInput" placeholder="Digite uma meta">
+
+<select id="mes">
+<option>Janeiro</option>
+<option>Fevereiro</option>
+<option>Março</option>
+<option>Abril</option>
+<option>Maio</option>
+<option>Junho</option>
+<option>Julho</option>
+<option>Agosto</option>
+<option>Setembro</option>
+<option>Outubro</option>
+<option>Novembro</option>
+<option>Dezembro</option>
+</select>
+
 <button onclick="addMeta()">Adicionar</button>
+
+<div class="progress-bar">
+<div id="progress" class="progress">0%</div>
+</div>
 
 <div id="metas"></div>
 
@@ -49,35 +95,74 @@ input{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCaHZ7sm6-sPp4zpnpOB8dwzDwbunsExC8",
-  authDomain: "metas-ana-e-th.firebaseapp.com",
-  projectId: "metas-ana-e-th",
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const metasDiv = document.getElementById("metas");
+const progressBar = document.getElementById("progress");
 
 function addMeta(){
-  const valor = document.getElementById("metaInput").value;
-  if(valor != ""){
-    addDoc(collection(db,"metas"),{texto:valor});
+  const texto = document.getElementById("metaInput").value;
+  const mes = document.getElementById("mes").value;
+
+  if(texto !== ""){
+    addDoc(collection(db,"metas"),{
+      texto:texto,
+      mes:mes,
+      concluida:false
+    });
     document.getElementById("metaInput").value="";
   }
 }
 
 window.addMeta = addMeta;
 
+function atualizarProgresso(docs){
+  let total = docs.length;
+  let concluidas = docs.filter(d=>d.data().concluida).length;
+  let porcentagem = total === 0 ? 0 : Math.round((concluidas/total)*100);
+  progressBar.style.width = porcentagem+"%";
+  progressBar.innerHTML = porcentagem+"%";
+}
+
 onSnapshot(collection(db,"metas"),(snapshot)=>{
   metasDiv.innerHTML="";
-  snapshot.forEach((doc)=>{
-    metasDiv.innerHTML += `<div class="meta">${doc.data().texto}</div>`;
+  let docs = [];
+  snapshot.forEach((docItem)=>{
+    docs.push(docItem);
+
+    let data = docItem.data();
+
+    metasDiv.innerHTML += `
+    <div class="meta ${data.concluida ? "concluida" : ""}">
+      <strong>${data.texto}</strong><br>
+      <small>${data.mes}</small><br>
+      <button onclick="toggle('${docItem.id}',${data.concluida})">Concluir</button>
+      <button onclick="excluir('${docItem.id}')">Excluir</button>
+    </div>
+    `;
   });
+
+  atualizarProgresso(docs);
 });
+
+window.toggle = async (id, status)=>{
+  const ref = doc(db,"metas",id);
+  await updateDoc(ref,{concluida:!status});
+}
+
+window.excluir = async (id)=>{
+  const ref = doc(db,"metas",id);
+  await deleteDoc(ref);
+}
 </script>
 
 </body>
